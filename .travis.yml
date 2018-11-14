@@ -1,0 +1,12 @@
+sudo:
+  - required
+
+services:
+  - docker
+
+before_install:
+  - docker-compose -f docker.compose.yml build
+  - docker-compose -f docker.compose.yml up -d
+  - sleep 20
+script:
+  - docker exec -it no-data-chat-api bash -c "make run_test"

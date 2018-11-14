@@ -1,0 +1,28 @@
+version: '3'
+services:
+  no-data-chat-api:
+    container_name: no-data-chat-api
+    environment:
+      - PORT=1604
+      - DEV_PORT=1605
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/go/src/github.com/Krapiy/noData-chat-API
+    ports:
+      - '1604:1605'
+    restart: always
+
+  mysql:
+    image: mysql
+    container_name: mysql
+    ports:
+      - '3316:3306'
+    environment:
+      - MYSQL_DATABASE=noData-chat-API
+      - MYSQL_USER=noData
+      - MYSQL_PASSWORD=
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    restart: always
