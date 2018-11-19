@@ -1,0 +1,14 @@
+- id: 1
+  user_name: I
+  password_hash: i_password
+  pub_key: xpub6CGPzoZzKb4eBQ8Q1BV8A69C4m49Zcvfp7tCCZFhTP8hmTUPPrnsUjcgZH49ZJRZwi9YZdSevvVE7QA8qG4a5n8fYBmoo24wfeeAxKg5jeR
+
+- id: 2
+  user_name: You
+  password_hash: you_password
+  pub_key: xpub6CnUxKumVvjj3nWsHf78RDGjZacYFiqvFpu993xgEAtquTaLfrK8RXKVuQYcaFhhpTRoMRtx8wpDLxx3SVKbzHPU9WfoLBuDesms5m2nXJ8
+
+- id: 3
+  user_name: Nikolay
+  password_hash: nikolay_password
+  pub_key: xpub6BxYnjkSyKA2LpCumYVmoCuecUtnnNA299tgDhqfsQ5QT9nqfTVaQfodcNgKJgssbFJRYSP954cFc1xfYH8cLGZHXUZyVyMAM4bXg6WzFr4
