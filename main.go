@@ -1,8 +1,12 @@
 package main
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/Krapiy/noData-chat-API/db"
 	"github.com/Krapiy/noData-chat-API/db/fixtures"
+	"github.com/Krapiy/noData-chat-API/ws"
 )
 
 func main() {
@@ -14,5 +18,15 @@ func main() {
 	err = fixtures.Load(client)
 	if err != nil {
 		panic(err)
+	}
+
+	err = ws.StartServer()
+	if err != nil {
+		panic(err)
+	}
+
+	for {
+		fmt.Println("run")
+		time.Sleep(time.Second * 1)
 	}
 }
