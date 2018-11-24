@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Krapiy/noData-chat-API/usecases"
 	"github.com/gorilla/websocket"
 )
 
 // StartServer run server with websocket connections
-func StartServer() error {
+func StartServer(uc usecases.UserDelivery) error {
 
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
@@ -21,7 +22,7 @@ func StartServer() error {
 			http.Error(w, fmt.Sprintf(`{"error":%s}`, err), http.StatusInternalServerError)
 			return
 		}
-		go targetController(conn)
+		go target(conn, uc)
 	})
 
 	return http.ListenAndServe(":1604", nil)

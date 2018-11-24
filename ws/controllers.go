@@ -3,12 +3,13 @@ package ws
 import (
 	"fmt"
 
+	"github.com/Krapiy/noData-chat-API/usecases"
 	"github.com/gorilla/websocket"
 )
 
 // controller lists
 const (
-	getUserByName = "getUserByName"
+	userSaltByName = "userSaltByName"
 )
 
 type littleRequestRNI struct {
@@ -24,7 +25,7 @@ type littleErrorRNI struct {
 	Error string `json:"error"`
 }
 
-func targetController(conn *websocket.Conn) {
+func target(conn *websocket.Conn, uc usecases.UserDelivery) {
 	for {
 		message := &littleRequestRNI{}
 		err := conn.ReadJSON(message)
@@ -34,12 +35,18 @@ func targetController(conn *websocket.Conn) {
 		}
 
 		switch message.Method {
-		case getUserByName:
-			err = conn.WriteJSON(&littleResponseRNI{"pub_key"})
+		case userSaltByName:
+			hash, e := uc.GetUserEncryptSalt(message.Data[0].(string))
+			err = e
+			if err == nil {
+				resp := littleResponseRNI{hash}
+				conn.WriteJSON(resp)
+			}
+			fmt.Println(err)
 		default:
 			err = fmt.Errorf("method %s not avaible", message.Method)
 		}
-
+		fmt.Println("error", err)
 		if err != nil {
 			conn.WriteJSON(&littleErrorRNI{err.Error()})
 		}

@@ -6,6 +6,7 @@ import (
 
 	"github.com/Krapiy/noData-chat-API/db"
 	"github.com/Krapiy/noData-chat-API/db/fixtures"
+	"github.com/Krapiy/noData-chat-API/usecases"
 	"github.com/Krapiy/noData-chat-API/ws"
 )
 
@@ -20,7 +21,11 @@ func main() {
 		panic(err)
 	}
 
-	err = ws.StartServer()
+	uc := &usecases.UserInteractor{
+		UserRepository: client,
+	}
+
+	err = ws.StartServer(uc)
 	if err != nil {
 		panic(err)
 	}
