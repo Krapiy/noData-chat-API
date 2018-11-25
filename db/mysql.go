@@ -108,7 +108,7 @@ func (c *MysqlDB) prepareSQLStatements() (err error) {
 }
 
 func (c *MysqlDB) FindByName(name string) (*domain.User, error) {
-	user := make([]*domain.User, 0)
+	user := make([]*domain.User, 0, 1)
 	c.sqlSelectUserByName.Select(&user, name)
 	if user[0] == nil {
 		return nil, errors.New(name)
