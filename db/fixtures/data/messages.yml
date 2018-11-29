@@ -1,0 +1,17 @@
+- id: 1
+  user_sender_id: 1
+  user_receiver_id: 0
+  room_id: 1
+  message: "Hello"
+
+- id: 2
+  user_sender_id: 2
+  user_receiver_id: 0
+  room_id: 1
+  message: "world"
+
+- id: 3
+  user_sender_id: 3
+  user_receiver_id: 0
+  room_id: 1
+  message: "!"

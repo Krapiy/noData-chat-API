@@ -22,7 +22,8 @@ func main() {
 	}
 
 	uc := &usecases.UserInteractor{
-		UserRepository: client,
+		UserRepository:    client,
+		MessageRepository: client,
 	}
 
 	err = ws.StartServer(uc)

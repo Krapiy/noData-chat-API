@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	"github.com/Krapiy/noData-chat-API/domain"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -16,7 +18,9 @@ const (
 type MysqlDB struct {
 	Conn *sqlx.DB
 
-	sqlSelectUserByName *sqlx.Stmt
+	sqlSelectUserByName       *sqlx.Stmt
+	sqlSelectMessagesByChatID *sqlx.Stmt
+	sqlInsertMessageByChatID  *sqlx.NamedStmt
 }
 
 // New create connect to DB and retrun client
@@ -91,8 +95,8 @@ func (c *MysqlDB) createMessagesTable() error {
 			user_sender_id BIGINT UNSIGNED NOT NULL,
 			user_receiver_id BIGINT UNSIGNED DEFAULT 0,
 			room_id BIGINT UNSIGNED DEFAULT 0,
+			message TEXT NOT NULL,
 			FOREIGN KEY (user_sender_id) REFERENCES users(id),
-			FOREIGN KEY (user_receiver_id) REFERENCES users(id),
 			FOREIGN KEY (room_id) REFERENCES rooms(room_id)
 		)
 	`
@@ -102,8 +106,17 @@ func (c *MysqlDB) createMessagesTable() error {
 
 func (c *MysqlDB) prepareSQLStatements() (err error) {
 	c.sqlSelectUserByName, err = c.Conn.Preparex(
-		`SELECT id, user_name, password_hash, pub_key FROM users WHERE user_name = ? LIMIT 1`,
+		`SELECT * FROM users WHERE user_name = ? LIMIT 1`,
 	)
+
+	c.sqlSelectMessagesByChatID, err = c.Conn.Preparex(
+		`SELECT * FROM messages WHERE room_id = ?`,
+	)
+
+	c.sqlInsertMessageByChatID, err = c.Conn.PrepareNamed(
+		"INSERT INTO messages (room_id, user_sender_id, message) VALUES(:room_id, :user_sender_id, :message)",
+	)
+
 	return err
 }
 
@@ -114,4 +127,23 @@ func (c *MysqlDB) FindByName(name string) (*domain.User, error) {
 		return nil, errors.New(name)
 	}
 	return user[0], nil
+}
+
+func (c *MysqlDB) SelectMessagesByChatID(id int) ([]*domain.Message, error) {
+	messages := []*domain.Message{}
+
+	err := c.sqlSelectMessagesByChatID.Select(&messages, id)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(messages)
+	return messages, nil
+}
+
+func (c *MysqlDB) InsertMessageByChatID(message *domain.Message) (*domain.Message, error) {
+	_, err := c.sqlInsertMessageByChatID.Exec(message)
+	if err != nil {
+		return nil, err
+	}
+	return message, nil
 }
