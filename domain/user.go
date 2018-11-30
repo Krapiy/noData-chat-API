@@ -22,7 +22,7 @@ type UserID uint64
 // UserRepository use case
 type UserRepository interface {
 	FindByName(string) (*User, error)
-	SelectUserPubKeyExcept(string) ([]*User, error)
+	SelectUsersPubKeyExcept(string) ([]*User, error)
 }
 
 // User constatis all info about user

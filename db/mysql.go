@@ -11,7 +11,6 @@ import (
 
 const (
 	errorTableCreate = "cannot create %s table"
-	errorPrepareSQL  = "invalid prepare %s"
 )
 
 // MysqlDB connect to mysql DB
@@ -19,9 +18,9 @@ type MysqlDB struct {
 	Conn *sqlx.DB
 
 	sqlSelectUserByName       *sqlx.Stmt
-	sqlSelectMessagesByChatID *sqlx.Stmt
-	sqlSelectPubKeyOtheUsers  *sqlx.Stmt
-	sqlInsertMessageByChatID  *sqlx.NamedStmt
+	sqlSelectMessagesByRoomID *sqlx.Stmt
+	sqlSelectPubKeyOtherUsers *sqlx.Stmt
+	sqlInsertMessageByRoomID  *sqlx.NamedStmt
 }
 
 // New create connect to DB and retrun client
@@ -52,7 +51,7 @@ func New(address string) (*MysqlDB, error) {
 
 	err = client.prepareSQLStatements()
 	if err != nil {
-		return nil, errors.Wrapf(err, errorPrepareSQL, "sqlSelectUserByName")
+		return nil, errors.Wrap(err, "prepare sql")
 	}
 
 	return client, nil
@@ -108,20 +107,32 @@ func (c *MysqlDB) prepareSQLStatements() (err error) {
 	c.sqlSelectUserByName, err = c.Conn.Preparex(
 		`SELECT * FROM users WHERE user_name = ? LIMIT 1`,
 	)
+	if err != nil {
+		return errors.Wrap(err, "select users by name")
+	}
 
-	c.sqlSelectMessagesByChatID, err = c.Conn.Preparex(
+	c.sqlSelectMessagesByRoomID, err = c.Conn.Preparex(
 		`SELECT * FROM messages WHERE room_id = ?`,
 	)
+	if err != nil {
+		return errors.Wrap(err, "select message by room id")
+	}
 
-	c.sqlSelectPubKeyOtheUsers, err = c.Conn.Preparex(
+	c.sqlSelectPubKeyOtherUsers, err = c.Conn.Preparex(
 		"SELECT user_name, pub_key FROM users WHERE user_name <> ?",
 	)
+	if err != nil {
+		return errors.Wrap(err, "select pub_key other users")
+	}
 
-	c.sqlInsertMessageByChatID, err = c.Conn.PrepareNamed(
+	c.sqlInsertMessageByRoomID, err = c.Conn.PrepareNamed(
 		"INSERT INTO messages (room_id, user_sender_id, message) VALUES(:room_id, :user_sender_id, :message)",
 	)
+	if err != nil {
+		return errors.Wrap(err, "insert message by room id")
+	}
 
-	return err
+	return nil
 }
 
 func (c *MysqlDB) FindByName(name string) (*domain.User, error) {
@@ -133,10 +144,10 @@ func (c *MysqlDB) FindByName(name string) (*domain.User, error) {
 	return user[0], nil
 }
 
-func (c *MysqlDB) SelectMessagesByChatID(id int) ([]*domain.Message, error) {
+func (c *MysqlDB) SelectMessagesByRoomID(id int) ([]*domain.Message, error) {
 	messages := []*domain.Message{}
 
-	err := c.sqlSelectMessagesByChatID.Select(&messages, id)
+	err := c.sqlSelectMessagesByRoomID.Select(&messages, id)
 	if err != nil {
 		return nil, err
 	}
@@ -144,17 +155,17 @@ func (c *MysqlDB) SelectMessagesByChatID(id int) ([]*domain.Message, error) {
 	return messages, nil
 }
 
-func (c *MysqlDB) InsertMessageByChatID(message *domain.Message) (*domain.Message, error) {
-	_, err := c.sqlInsertMessageByChatID.Exec(message)
+func (c *MysqlDB) InsertMessageByRoomID(message *domain.Message) (*domain.Message, error) {
+	_, err := c.sqlInsertMessageByRoomID.Exec(message)
 	if err != nil {
 		return nil, err
 	}
 	return message, nil
 }
 
-func (c *MysqlDB) SelectUserPubKeyExcept(name string) ([]*domain.User, error) {
+func (c *MysqlDB) SelectUsersPubKeyExcept(name string) ([]*domain.User, error) {
 	user := []*domain.User{}
-	err := c.sqlSelectPubKeyOtheUsers.Select(&user, name)
+	err := c.sqlSelectPubKeyOtherUsers.Select(&user, name)
 	if err != nil {
 		return nil, err
 	}
