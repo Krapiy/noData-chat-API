@@ -22,14 +22,15 @@ type UserID uint64
 // UserRepository use case
 type UserRepository interface {
 	FindByName(string) (*User, error)
+	SelectUserPubKeyExcept(string) ([]*User, error)
 }
 
 // User constatis all info about user
 type User struct {
-	ID       int    `db:"id"`
-	Name     string `db:"user_name"`
-	Password string `db:"password_hash"`
-	PubKey   string `db:"pub_key"`
+	ID       int    `json:"id,omitempty" db:"id"`
+	Name     string `json:"user_name,omitempty" db:"user_name"`
+	Password string `json:"password_hash,omitempty" db:"password_hash"`
+	PubKey   string `json:"pub_key,omitempty" db:"pub_key"`
 	// Config
 }
 
