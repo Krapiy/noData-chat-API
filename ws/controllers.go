@@ -11,8 +11,8 @@ import (
 
 // controller lists
 const (
-	userSaltByName      = "userSaltByName"
-	getMessagesByChatID = "getMessagesByChatID"
+	getEncryptInfo      = "getEncryptInfo"
+	getMessagesByRoomID = "getMessagesByRoomID"
 	sendMessageToRoom   = "sendMessageToRoom"
 )
 
@@ -39,15 +39,15 @@ func target(conn *websocket.Conn, uc usecases.UserDelivery) {
 		}
 
 		switch message.Method {
-		case userSaltByName:
-			info, e := uc.GetUserEncryptSalt(message.Data[0].(string))
+		case getEncryptInfo:
+			info, e := uc.GetEncryptInfo(message.Data[0].(string))
 			err = e
 			if err == nil {
 				resp := littleResponseRNI{info}
 				conn.WriteJSON(resp)
 			}
-		case getMessagesByChatID:
-			messages, e := uc.GetMessagesByChatID(int(message.Data[0].(float64)))
+		case getMessagesByRoomID:
+			messages, e := uc.GetMessagesByRoomID(int(message.Data[0].(float64)))
 			err = e
 			if err == nil {
 				resp := littleResponseRNI{messages}
@@ -56,11 +56,11 @@ func target(conn *websocket.Conn, uc usecases.UserDelivery) {
 		case sendMessageToRoom:
 			userID := domain.UserID(message.Data[1].(float64))
 			message := &domain.Message{
-				CahtID:       int(message.Data[0].(float64)),
+				RoomID:       int(message.Data[0].(float64)),
 				UserSenderID: userID,
 				Message:      message.Data[2].(string),
 			}
-			newMessage, e := uc.InsertMessageByChatID(message)
+			newMessage, e := uc.InsertMessageByRoomID(message)
 			err = e
 			if err == nil {
 				resp := littleResponseRNI{newMessage}

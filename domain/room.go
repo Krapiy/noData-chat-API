@@ -1,7 +1,7 @@
 package domain
 
-// CahtID uniquely identifies the room
-type CahtID uint64
+// RoomID uniquely identifies the room
+type RoomID uint64
 
 // RoomRepository use case
 type RoomRepository interface {
@@ -10,6 +10,6 @@ type RoomRepository interface {
 
 // Room what user is in the room
 type Room struct {
-	ID CahtID
+	ID RoomID
 	UserID
 }
