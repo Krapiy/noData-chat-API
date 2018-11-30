@@ -40,10 +40,10 @@ func target(conn *websocket.Conn, uc usecases.UserDelivery) {
 
 		switch message.Method {
 		case userSaltByName:
-			hash, e := uc.GetUserEncryptSalt(message.Data[0].(string))
+			info, e := uc.GetUserEncryptSalt(message.Data[0].(string))
 			err = e
 			if err == nil {
-				resp := littleResponseRNI{hash}
+				resp := littleResponseRNI{info}
 				conn.WriteJSON(resp)
 			}
 		case getMessagesByChatID:

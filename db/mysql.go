@@ -20,6 +20,7 @@ type MysqlDB struct {
 
 	sqlSelectUserByName       *sqlx.Stmt
 	sqlSelectMessagesByChatID *sqlx.Stmt
+	sqlSelectPubKeyOtheUsers  *sqlx.Stmt
 	sqlInsertMessageByChatID  *sqlx.NamedStmt
 }
 
@@ -64,7 +65,6 @@ func (c *MysqlDB) createUsersTable() error {
 			user_name VARCHAR(255) NOT NULL UNIQUE,
 			password_hash VARCHAR(255) NOT NULL,
 			pub_key VARCHAR(1000) NOT NULL,
-			config BLOB NULL,
 			INDEX(user_name)
 		)
 	`
@@ -113,6 +113,10 @@ func (c *MysqlDB) prepareSQLStatements() (err error) {
 		`SELECT * FROM messages WHERE room_id = ?`,
 	)
 
+	c.sqlSelectPubKeyOtheUsers, err = c.Conn.Preparex(
+		"SELECT user_name, pub_key FROM users WHERE user_name <> ?",
+	)
+
 	c.sqlInsertMessageByChatID, err = c.Conn.PrepareNamed(
 		"INSERT INTO messages (room_id, user_sender_id, message) VALUES(:room_id, :user_sender_id, :message)",
 	)
@@ -146,4 +150,14 @@ func (c *MysqlDB) InsertMessageByChatID(message *domain.Message) (*domain.Messag
 		return nil, err
 	}
 	return message, nil
+}
+
+func (c *MysqlDB) SelectUserPubKeyExcept(name string) ([]*domain.User, error) {
+	user := []*domain.User{}
+	err := c.sqlSelectPubKeyOtheUsers.Select(&user, name)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

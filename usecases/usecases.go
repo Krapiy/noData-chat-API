@@ -9,7 +9,7 @@ import (
 
 // UserDelivery display methods for access for UI
 type UserDelivery interface {
-	GetUserEncryptSalt(string) (string, error)
+	GetUserEncryptSalt(string) (map[string]interface{}, error)
 	GetMessagesByChatID(int) ([]*domain.Message, error)
 	InsertMessageByChatID(*domain.Message) (*domain.Message, error)
 }
@@ -21,18 +21,28 @@ type UserInteractor struct {
 }
 
 // GetUserEncryptSalt get user salt encrypt user pubkey
-func (i *UserInteractor) GetUserEncryptSalt(name string) (string, error) {
+func (i *UserInteractor) GetUserEncryptSalt(name string) (map[string]interface{}, error) {
 	user, err := i.UserRepository.FindByName(name)
 	if err != nil {
-		return "", fmt.Errorf("user %s not found", name)
+		return nil, fmt.Errorf("user %s not found", name)
 	}
 
 	encryptSalt, err := user.EncryptSalt()
 	if err != nil {
-		return "", errors.Wrap(err, "invalid generate salt:")
+		return nil, errors.Wrap(err, "invalid generate salt:")
 	}
 
-	return encryptSalt, nil
+	keys, err := i.UserRepository.SelectUserPubKeyExcept(name)
+	if err != nil {
+		return nil, fmt.Errorf("cannot get pub_key")
+	}
+
+	res := map[string]interface{}{
+		"salt":     encryptSalt,
+		"pub_keys": keys,
+	}
+
+	return res, nil
 }
 
 func (i *UserInteractor) GetMessagesByChatID(id int) ([]*domain.Message, error) {
